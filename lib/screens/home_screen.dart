@@ -286,13 +286,28 @@ class _ExactAlarmHint extends StatefulWidget {
   State<_ExactAlarmHint> createState() => _ExactAlarmHintState();
 }
 
-class _ExactAlarmHintState extends State<_ExactAlarmHint> {
+class _ExactAlarmHintState extends State<_ExactAlarmHint>
+    with WidgetsBindingObserver {
   bool _show = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// إعادة الفحص عند العودة من الخلفية: المستخدم قد منح الإذن للتو
+  /// من إعدادات النظام، فتختفي البطاقة فوراً بدل بقائها ظاهرة.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _check();
   }
 
   Future<void> _check() async {

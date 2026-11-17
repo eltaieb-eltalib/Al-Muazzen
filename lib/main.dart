@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'data/cities.dart';
 import 'screens/azkar_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/qibla_screen.dart';
@@ -20,21 +19,6 @@ void main() async {
   runApp(const MuazzenApp());
 }
 
-/// المدينة الفعّالة للحسابات: موقع GPS المقروء فعلياً إن كان مفعّلاً
-/// ومتاحاً، وإلا المدينة المختارة يدوياً.
-City effectiveCityFor(AppSettings s) {
-  if (s.useGps && s.gpsLat != null && s.gpsLng != null) {
-    return City(
-      nameAr: 'موقعي الحالي',
-      nameEn: 'Current location',
-      country: '',
-      lat: s.gpsLat!,
-      lng: s.gpsLng!,
-    );
-  }
-  return arabCities[s.cityIndex.clamp(0, arabCities.length - 1)];
-}
-
 /// الجذر — يحمل الإعدادات ويمرّرها للشاشات.
 class MuazzenApp extends StatefulWidget {
   const MuazzenApp({super.key});
@@ -43,7 +27,7 @@ class MuazzenApp extends StatefulWidget {
   State<MuazzenApp> createState() => _MuazzenAppState();
 }
 
-class _MuazzenAppState extends State<MuazzenApp> {
+class _MuazzenAppState extends State<MuazzenApp> with WidgetsBindingObserver {
   final _settingsService = SettingsService();
   AppSettings _settings = const AppSettings();
   bool _loaded = false;
@@ -51,7 +35,26 @@ class _MuazzenAppState extends State<MuazzenApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// عند عودة التطبيق من الخلفية: أعد الجدولة فوراً —
+  /// (١) إذن المنبّه الدقيق الممنوح من إعدادات النظام أثناء الغياب
+  /// يُطبَّق على التنبيهات بدل بقائها غير دقيقة،
+  /// (٢) نافذة الأيام السبعة تُمدّد باستمرار فلا تنفد أبداً مهما
+  /// بقي التطبيق في الذاكرة دون إغلاق كلي.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _loaded) {
+      _schedule(_settings);
+    }
   }
 
   Future<void> _load() async {
