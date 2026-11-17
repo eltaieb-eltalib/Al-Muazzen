@@ -6,7 +6,6 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../data/cities.dart';
-import '../services/notification_service.dart';
 import '../services/prayer_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/master_switch.dart';
@@ -46,8 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// شريط «صامت مؤقتاً»: كتم ساعة واحدة أو حتى الصلاة القادمة.
-  /// الكتم يلغي الإشعارات المجدولة الآن؛ وعند انتهائه (أو إلغائه يدوياً)
-  /// تُعاد الجدولة من applyMasterToggle / زر إلغاء الكتم.
+  /// الكتم لا يلغي الجدولة: إعادة الجدولة المركزية (في main) تتخطّى
+  /// الصلوات الواقعة داخل فترة الكتم فقط، فتعود التنبيهات تلقائياً
+  /// بانتهاء الكتم — دون فتح التطبيق ودون لمس بقية الأيام.
   Widget _muteBar(PrayerInfo next) {
     final s = widget.settings;
     if (s.isMuted) {
@@ -58,12 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
           leading: const Icon(Icons.volume_off, color: Colors.orange),
           title: Text('صامت مؤقتاً حتى $until'),
           trailing: TextButton(
-            onPressed: () async {
-              final updated = await applyMasterToggle(
-                settings: s, city: widget.city, turnOn: true,
-              );
-              widget.onSettingsChanged(updated);
-            },
+            onPressed: () =>
+                widget.onSettingsChanged(s.copyWith(clearMutedUntil: true)),
             child: const Text('إلغاء الكتم'),
           ),
         ),
@@ -79,8 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text('صامت مؤقتاً:'),
             const Spacer(),
             TextButton(
-              onPressed: () async {
-                await NotificationService.instance.stopAll();
+              onPressed: () {
                 widget.onSettingsChanged(s.copyWith(
                   mutedUntil: DateTime.now().add(const Duration(hours: 1)),
                 ));
@@ -92,8 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('ساعة واحدة'),
             ),
             TextButton(
-              onPressed: () async {
-                await NotificationService.instance.stopAll();
+              onPressed: () {
                 widget.onSettingsChanged(s.copyWith(mutedUntil: next.time));
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -186,7 +180,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.location_on, color: Colors.white70, size: 18),
-                  Text('${widget.city.nameAr}، ${widget.city.country}',
+                  Text(
+                      widget.city.country.isEmpty
+                          ? widget.city.nameAr
+                          : '${widget.city.nameAr}، ${widget.city.country}',
                       style: const TextStyle(color: Colors.white, fontSize: 16)),
                 ],
               ),

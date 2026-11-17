@@ -33,8 +33,10 @@ android {
         applicationId = "com.tayeb.almuazzen"
         minSdk = 24          // Android 7.0 — broad reach, modern enough for exact alarms
         targetSdk = 36       // Android 16 — Play requirement for new apps (Aug 2026)
-        versionCode = 1
-        versionName = "1.0.0"
+        // رقم الإصدار واسمه يأتيان من pubspec.yaml (version: X.Y.Z+N) —
+        // لا تثبّتهما هنا أبداً حتى لا ترفض Play التحديثات لتكرار الرقم.
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
         multiDexEnabled = true
     }
 
@@ -68,6 +70,7 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24"
+    // لا تضف kotlin-stdlib يدوياً: إضافة Kotlin الحديثة توفّرها،
+    // وتثبيت نسخة قديمة (1.9.24) يتعارض مع Kotlin 2.x.
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
 }

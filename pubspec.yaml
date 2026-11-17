@@ -1,7 +1,7 @@
 name: al_muazzen
 description: "المؤذن - Al-Muazzen: تطبيق مواقيت الصلاة والأذكار بالعربية، يعمل بدون إنترنت ويحترم الخصوصية."
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.5.0

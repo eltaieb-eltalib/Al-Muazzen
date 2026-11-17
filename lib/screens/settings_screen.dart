@@ -23,6 +23,8 @@ class SettingsScreen extends StatelessWidget {
     'isha': 'العشاء',
   };
 
+  /// تفعيل GPS فعلياً: إذن + قراءة الموقع الحقيقي وحفظ إحداثياته،
+  /// فتُحسب المواقيت والقبلة والتنبيهات منه (لا إذن بلا استخدام).
   Future<void> _requestGps(BuildContext context) async {
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -36,8 +38,32 @@ class SettingsScreen extends StatelessWidget {
         );
       }
       onChanged(settings.copyWith(useGps: false));
-    } else {
-      onChanged(settings.copyWith(useGps: true));
+      return;
+    }
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+      onChanged(settings.copyWith(
+        useGps: true,
+        gpsLat: pos.latitude,
+        gpsLng: pos.longitude,
+      ));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم تحديد موقعك — ستُحسب المواقيت والقبلة منه')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذّر تحديد الموقع الآن — تأكد أن GPS يعمل ثم حاول مجدداً')),
+        );
+      }
+      onChanged(settings.copyWith(useGps: false));
     }
   }
 
@@ -127,27 +153,9 @@ class SettingsScreen extends StatelessWidget {
                 'يُذاع الأذان كاملاً عند دخول وقت الصلاة. عند الإيقاف يصلك تنبيه بصوت الجهاز فقط'),
             secondary: const Icon(Icons.volume_up),
             value: settings.adhanSound,
-            onChanged: (v) async {
-              final updated = settings.copyWith(adhanSound: v);
-              onChanged(updated);
-              // إعادة الجدولة فوراً بالقناة المناسبة إن كانت التنبيهات فعّالة
-              if (updated.alertsActive) {
-                final city =
-                    arabCities[updated.cityIndex.clamp(0, arabCities.length - 1)];
-                final now = DateTime.now();
-                await NotificationService.instance.enableAll(
-                  today: PrayerService.forDate(
-                      lat: city.lat, lng: city.lng, date: now,
-                      methodKey: updated.methodKey, hanafi: updated.hanafi),
-                  tomorrow: PrayerService.forDate(
-                      lat: city.lat, lng: city.lng,
-                      date: now.add(const Duration(days: 1)),
-                      methodKey: updated.methodKey, hanafi: updated.hanafi),
-                  enabled: updated.prayerNotifications,
-                  adhanSound: v,
-                );
-              }
-            },
+            // إعادة الجدولة بالقناة المناسبة تتم مركزياً في main عند
+            // أي تغيير للإعدادات — لا حاجة لجدولة محلية هنا.
+            onChanged: (v) => onChanged(settings.copyWith(adhanSound: v)),
           ),
           const _AdhanPreviewTile(),
           TextButton.icon(

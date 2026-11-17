@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'data/cities.dart';
 import 'screens/azkar_screen.dart';
@@ -15,6 +16,21 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.instance.init();
   runApp(const MuazzenApp());
+}
+
+/// المدينة الفعّالة للحسابات: موقع GPS المقروء فعلياً إن كان مفعّلاً
+/// ومتاحاً، وإلا المدينة المختارة يدوياً.
+City effectiveCityFor(AppSettings s) {
+  if (s.useGps && s.gpsLat != null && s.gpsLng != null) {
+    return City(
+      nameAr: 'موقعي الحالي',
+      nameEn: 'Current location',
+      country: '',
+      lat: s.gpsLat!,
+      lng: s.gpsLng!,
+    );
+  }
+  return arabCities[s.cityIndex.clamp(0, arabCities.length - 1)];
 }
 
 /// الجذر — يحمل الإعدادات ويمرّرها للشاشات.
@@ -37,34 +53,64 @@ class _MuazzenAppState extends State<MuazzenApp> {
   }
 
   Future<void> _load() async {
-    final s = await _settingsService.load();
+    var s = await _settingsService.load();
+    // تحديث صامت لموقع GPS عند الفتح — فقط إن كان الإذن ممنوحاً أصلاً
+    // (لا مطالبات عند الفتح أبداً). أي فشل يُبقي آخر موقع محفوظ.
+    if (s.useGps) {
+      try {
+        final perm = await Geolocator.checkPermission();
+        if (perm == LocationPermission.always ||
+            perm == LocationPermission.whileInUse) {
+          final pos = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 5),
+            ),
+          );
+          s = s.copyWith(gpsLat: pos.latitude, gpsLng: pos.longitude);
+          await _settingsService.save(s);
+        }
+      } catch (_) {
+        // لا موقع الآن — نكمل بآخر موقع محفوظ أو بالمدينة اليدوية.
+      }
+    }
     if (!mounted) return;
     setState(() {
       _settings = s;
       _loaded = true;
     });
-    // إعادة الجدولة عند فتح التطبيق: إن كان المؤذن يعمل وغير مكتوم،
-    // نضمن جدولة اليوم والغد (يغطي انتهاء الكتم المؤقت وتغيّر التاريخ).
-    // ملاحظة: بعد إعادة تشغيل الجهاز نفسه، الإشعارات المجدولة تُستعاد
-    // تلقائياً بواسطة ScheduledNotificationBootReceiver (انظر AndroidManifest)
-    // حتى دون فتح التطبيق.
-    if (s.alertsActive) {
-      final city = arabCities[s.cityIndex.clamp(0, arabCities.length - 1)];
-      final now = DateTime.now();
-      await NotificationService.instance.enableAll(
-        today: PrayerService.forDate(
-            lat: city.lat, lng: city.lng, date: now, methodKey: s.methodKey, hanafi: s.hanafi),
-        tomorrow: PrayerService.forDate(
-            lat: city.lat, lng: city.lng, date: now.add(const Duration(days: 1)), methodKey: s.methodKey, hanafi: s.hanafi),
-        enabled: s.prayerNotifications,
-        adhanSound: s.adhanSound,
-      );
-    }
+    // إعادة الجدولة الصامتة عند فتح التطبيق (٧ أيام، دون طلب أذونات):
+    // تغطي تغيّر التاريخ وانتهاء الكتم المؤقت. ملاحظة: بعد إعادة تشغيل
+    // الجهاز نفسه، الإشعارات المجدولة تُستعاد تلقائياً بواسطة
+    // ScheduledNotificationBootReceiver حتى دون فتح التطبيق.
+    await _schedule(s);
+  }
+
+  /// إعادة جدولة صامتة من الإعدادات الحالية — تُستدعى عند الفتح وبعد
+  /// أي تغيير في الإعدادات المؤثرة (مدينة، GPS، طريقة حساب، مذهب،
+  /// صلاة مفعّلة، صوت الأذان، كتم) حتى تنعكس فوراً على التنبيهات.
+  Future<void> _schedule(AppSettings s) async {
+    if (!s.masterEnabled) return;
+    final city = effectiveCityFor(s);
+    final days = PrayerService.daysAhead(
+      lat: city.lat,
+      lng: city.lng,
+      methodKey: s.methodKey,
+      hanafi: s.hanafi,
+    );
+    await NotificationService.instance.enableAll(
+      days: days,
+      enabled: s.prayerNotifications,
+      adhanSound: s.adhanSound,
+      askPermissions: false,
+      mutedUntil: s.isMuted ? s.mutedUntil : null,
+    );
   }
 
   Future<void> _update(AppSettings s) async {
     setState(() => _settings = s);
     await _settingsService.save(s);
+    await _schedule(s);
   }
 
   @override
@@ -132,7 +178,7 @@ class _RootScaffoldState extends State<RootScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final city = arabCities[widget.settings.cityIndex.clamp(0, arabCities.length - 1)];
+    final city = effectiveCityFor(widget.settings);
     final pages = [
       HomeScreen(city: city, settings: widget.settings, onSettingsChanged: widget.onSettingsChanged),
       const AzkarScreen(),

@@ -17,20 +17,18 @@ Future<AppSettings> applyMasterToggle({
     return settings.copyWith(masterEnabled: false);
   }
   final updated = settings.copyWith(masterEnabled: true, clearMutedUntil: true);
-  final now = DateTime.now();
-  final today = PrayerService.forDate(
-    lat: city.lat, lng: city.lng, date: now,
-    methodKey: updated.methodKey, hanafi: updated.hanafi,
-  );
-  final tomorrow = PrayerService.forDate(
-    lat: city.lat, lng: city.lng, date: now.add(const Duration(days: 1)),
-    methodKey: updated.methodKey, hanafi: updated.hanafi,
+  // جدولة ٧ أيام كاملة — والمدينة هنا هي «الفعّالة» (GPS إن وُجد).
+  final days = PrayerService.daysAhead(
+    lat: city.lat,
+    lng: city.lng,
+    methodKey: updated.methodKey,
+    hanafi: updated.hanafi,
   );
   await NotificationService.instance.enableAll(
-    today: today,
-    tomorrow: tomorrow,
+    days: days,
     enabled: updated.prayerNotifications,
     adhanSound: updated.adhanSound,
+    askPermissions: true, // فعل صريح من المستخدم — اطلب الأذونات الآن
   );
   return updated;
 }

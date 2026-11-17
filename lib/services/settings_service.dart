@@ -20,6 +20,11 @@ class AppSettings {
   /// false = تنبيه بصوت إشعارات الجهاز الافتراضي فقط.
   final bool adhanSound;
 
+  /// آخر موقع GPS مقروء فعلياً (عند تفعيل useGps). تُحسب المواقيت
+  /// والقبلة منه بدلاً من المدينة اليدوية.
+  final double? gpsLat;
+  final double? gpsLng;
+
   const AppSettings({
     this.cityIndex = 0,
     this.useGps = false,
@@ -29,6 +34,8 @@ class AppSettings {
     this.masterEnabled = true,
     this.mutedUntil,
     this.adhanSound = true,
+    this.gpsLat,
+    this.gpsLng,
     this.prayerNotifications = const {
       'fajr': true,
       'dhuhr': true,
@@ -53,6 +60,8 @@ class AppSettings {
     bool? masterEnabled,
     DateTime? mutedUntil,
     bool? adhanSound,
+    double? gpsLat,
+    double? gpsLng,
     bool clearMutedUntil = false,
     Map<String, bool>? prayerNotifications,
   }) {
@@ -64,6 +73,8 @@ class AppSettings {
       darkMode: darkMode ?? this.darkMode,
       masterEnabled: masterEnabled ?? this.masterEnabled,
       adhanSound: adhanSound ?? this.adhanSound,
+      gpsLat: gpsLat ?? this.gpsLat,
+      gpsLng: gpsLng ?? this.gpsLng,
       mutedUntil: clearMutedUntil ? null : (mutedUntil ?? this.mutedUntil),
       prayerNotifications: prayerNotifications ?? this.prayerNotifications,
     );
@@ -78,6 +89,8 @@ class SettingsService {
   static const _kDark = 'dark_mode';
   static const _kMaster = 'master_enabled';
   static const _kAdhanSound = 'adhan_sound';
+  static const _kGpsLat = 'gps_lat';
+  static const _kGpsLng = 'gps_lng';
   static const _kMutedUntil = 'muted_until_iso';
   static const _kNotifPrefix = 'notif_';
 
@@ -96,6 +109,8 @@ class SettingsService {
       darkMode: prefs.getBool(_kDark) ?? false,
       masterEnabled: prefs.getBool(_kMaster) ?? true,
       adhanSound: prefs.getBool(_kAdhanSound) ?? true,
+      gpsLat: prefs.getDouble(_kGpsLat),
+      gpsLng: prefs.getDouble(_kGpsLng),
       mutedUntil: mutedRaw == null ? null : DateTime.tryParse(mutedRaw),
       prayerNotifications: notifs,
     );
@@ -110,6 +125,13 @@ class SettingsService {
     await prefs.setBool(_kDark, s.darkMode);
     await prefs.setBool(_kMaster, s.masterEnabled);
     await prefs.setBool(_kAdhanSound, s.adhanSound);
+    if (s.gpsLat == null || s.gpsLng == null) {
+      await prefs.remove(_kGpsLat);
+      await prefs.remove(_kGpsLng);
+    } else {
+      await prefs.setDouble(_kGpsLat, s.gpsLat!);
+      await prefs.setDouble(_kGpsLng, s.gpsLng!);
+    }
     if (s.mutedUntil == null) {
       await prefs.remove(_kMutedUntil);
     } else {

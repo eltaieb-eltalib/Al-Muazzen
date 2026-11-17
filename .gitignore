@@ -22,3 +22,7 @@ ios/Pods/
 .idea/
 .vscode/
 *.iml
+
+# Gradle / Kotlin build caches
+android/.gradle/
+.kotlin/

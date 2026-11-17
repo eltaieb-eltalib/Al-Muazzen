@@ -68,6 +68,12 @@
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
             android:exported="false" />
 
+        <!-- Required so the «إيقاف الأذان» notification action reaches the
+             plugin's background callback even when the app is not open. -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"
+            android:exported="false" />
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

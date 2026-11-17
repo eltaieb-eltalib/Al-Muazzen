@@ -96,6 +96,28 @@ class PrayerService {
     );
   }
 
+  /// أيام متتالية بدءاً من اليوم — للجدولة المسبقة (٧ أيام افتراضياً)
+  /// حتى لا تنقطع التنبيهات إن لم يُفتح التطبيق كل يوم.
+  static List<PrayerDay> daysAhead({
+    required double lat,
+    required double lng,
+    required String methodKey,
+    bool hanafi = false,
+    int count = 7,
+  }) {
+    final now = DateTime.now();
+    return [
+      for (var i = 0; i < count; i++)
+        forDate(
+          lat: lat,
+          lng: lng,
+          date: now.add(Duration(days: i)),
+          methodKey: methodKey,
+          hanafi: hanafi,
+        ),
+    ];
+  }
+
   static PrayerDay today({
     required double lat,
     required double lng,

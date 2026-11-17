@@ -39,7 +39,7 @@
 📖 أذكار وسبحة وقبلة
 • أذكار الصباح والمساء (10 + 10) بعدّادات وشريط تقدّم، مع ذكر المصدر لكل ذِكر.
 • سبحة إلكترونية بأهداف 33 / 99 / 100 مع اهتزاز عند الإتمام.
-• اتجاه القبلة محسوب فلكياً من موقعك مع بوصلة.
+• اتجاه القبلة محسوب فلكياً بدقة من مدينتك أو من موقعك بـ GPS.
 
 🔒 خصوصيتك أولاً
 • لا حسابات، لا إعلانات، لا تتبّع، لا خوادم — كل الحسابات تتم على جهازك فقط.
@@ -75,7 +75,7 @@ Al-Muazzen — prayer times & azkar, Arabic-first and fully offline.
 📖 Azkar, tasbih & qibla
 • Morning and evening azkar (10 + 10) with counters and progress, each with its source cited.
 • A digital tasbih with 33 / 99 / 100 targets and a vibration on completion.
-• Qibla direction calculated astronomically from your location, with a compass.
+• Qibla direction calculated astronomically from your city or your GPS location.
 
 🔒 Privacy first
 • No accounts, no ads, no tracking, no servers — everything is calculated on your device.
