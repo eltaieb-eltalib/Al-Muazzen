@@ -130,6 +130,26 @@ class NotificationService {
     }
   }
 
+  /// طلب إذن المنبّه الدقيق فقط — يفتح صفحة إعدادات النظام الخاصة
+  /// بهذا الإذن (يُستدعى من زر «منح الإذن» في تنبيه الإعدادات).
+  Future<void> requestExactAlarmPermission() async {
+    if (kIsWeb) return;
+    if (!_initialized) await init();
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await android?.requestExactAlarmsPermission();
+  }
+
+  /// هل إذن المنبّه الدقيق ممنوح؟ تُستخدم لعرض تنبيه داخل التطبيق
+  /// يشرح للمستخدم أن التنبيه غير الدقيق قد يتأخر في توفير الطاقة.
+  Future<bool> canScheduleExactAlarms() async {
+    if (kIsWeb) return true;
+    if (!_initialized) await init();
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return await android?.canScheduleExactNotifications() ?? true;
+  }
+
   /// وضع الجدولة الآمن: منبّه دقيق إن كان إذنه ممنوحاً، وإلا غير دقيق.
   /// على Android 14+ إذن المنبّه الدقيق مرفوض افتراضياً، والجدولة
   /// الدقيقة بدونه ترمي استثناءً — فلا بد من هذا الفحص حتى لا تتعطّل

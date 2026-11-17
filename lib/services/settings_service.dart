@@ -63,6 +63,7 @@ class AppSettings {
     double? gpsLat,
     double? gpsLng,
     bool clearMutedUntil = false,
+    bool clearGps = false,
     Map<String, bool>? prayerNotifications,
   }) {
     return AppSettings(
@@ -73,8 +74,10 @@ class AppSettings {
       darkMode: darkMode ?? this.darkMode,
       masterEnabled: masterEnabled ?? this.masterEnabled,
       adhanSound: adhanSound ?? this.adhanSound,
-      gpsLat: gpsLat ?? this.gpsLat,
-      gpsLng: gpsLng ?? this.gpsLng,
+      // clearGps: حذف الإحداثيات المحفوظة نهائياً (عند إيقاف GPS) —
+      // وعد سياسة الخصوصية: الموقع يُحذف عند إيقاف GPS.
+      gpsLat: clearGps ? null : (gpsLat ?? this.gpsLat),
+      gpsLng: clearGps ? null : (gpsLng ?? this.gpsLng),
       mutedUntil: clearMutedUntil ? null : (mutedUntil ?? this.mutedUntil),
       prayerNotifications: prayerNotifications ?? this.prayerNotifications,
     );

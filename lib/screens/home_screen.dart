@@ -6,6 +6,7 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../data/cities.dart';
+import '../services/notification_service.dart';
 import '../services/prayer_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/master_switch.dart';
@@ -164,6 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               // ===== صامت مؤقتاً =====
               if (widget.settings.masterEnabled) _muteBar(next),
+              // تنبيه المنبّه الدقيق: يظهر فقط إن كان الإذن غير ممنوح
+              if (widget.settings.masterEnabled) const _ExactAlarmHint(),
               const SizedBox(height: 8),
               Text(
                 '${hijri.hDay} ${hijriMonthsAr[hijri.hMonth - 1]} ${hijri.hYear} هـ',
@@ -267,6 +270,52 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// بطاقة تنبيه تظهر فقط عندما يكون إذن المنبّه الدقيق غير ممنوح:
+/// التنبيهات تعمل بالوضع غير الدقيق وقد تتأخر في وضع توفير الطاقة،
+/// فندعو المستخدم لمنح الإذن بضغطة واحدة.
+class _ExactAlarmHint extends StatefulWidget {
+  const _ExactAlarmHint();
+
+  @override
+  State<_ExactAlarmHint> createState() => _ExactAlarmHintState();
+}
+
+class _ExactAlarmHintState extends State<_ExactAlarmHint> {
+  bool _show = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
+  Future<void> _check() async {
+    final ok = await NotificationService.instance.canScheduleExactAlarms();
+    if (mounted) setState(() => _show = !ok);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_show) return const SizedBox.shrink();
+    return Card(
+      color: Colors.amber.shade50,
+      child: ListTile(
+        leading: const Icon(Icons.alarm_off, color: Colors.orange),
+        title: const Text('التنبيهات قد تتأخر'),
+        subtitle: const Text(
+            'إذن «المنبّه الدقيق» غير ممنوح، وفي وضع توفير الطاقة قد يصلك الأذان متأخراً. امنح الإذن ليصل في وقته تماماً.'),
+        trailing: TextButton(
+          onPressed: () async {
+            await NotificationService.instance.requestPermissions();
+            await _check();
+          },
+          child: const Text('منح الإذن'),
         ),
       ),
     );

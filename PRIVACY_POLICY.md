@@ -10,7 +10,7 @@
 - **لا إعلانات:** التطبيق لا يحتوي على أي شبكة إعلانية أو SDK إعلاني.
 - **لا تتبّع ولا تحليلات:** لا Firebase، لا Google Analytics، لا أدوات تتبّع أو بصمة جهاز من أي نوع.
 - **لا حسابات:** لا تسجيل دخول ولا بريد إلكتروني ولا رقم هاتف.
-- **الموقع:** إذا فعّلتَ خيار GPS بنفسك، تُستخدم إحداثيات جهازك **على جهازك فقط** لحساب مواقيت الصلاة واتجاه القبلة. لا تُرسل الإحداثيات إلى أي خادم، ولا تُحفظ بعد الحساب، ولا تُشارك مع أي طرف. ويمكنك استخدام التطبيق كاملاً بدون موقع، باختيار مدينة من القائمة الجاهزة (25 مدينة).
+- **الموقع:** إذا فعّلتَ خيار GPS بنفسك، تُستخدم إحداثيات جهازك **على جهازك فقط** لحساب مواقيت الصلاة واتجاه القبلة. يُحفظ آخر موقع **محلياً على جهازك فقط** لتُحسب منه المواقيت عند فتح التطبيق، ويُحذف عند إيقاف GPS أو حذف التطبيق. لا تُرسل الإحداثيات إلى أي خادم، ولا تُشارك مع أي طرف أبداً. ويمكنك استخدام التطبيق كاملاً بدون موقع، باختيار مدينة من القائمة الجاهزة (25 مدينة).
 - **الإعدادات المحلية:** مدينتك وطريقة الحساب وتفضيلات الإشعارات والوضع الليلي تُحفظ محلياً على جهازك فقط (SharedPreferences) وتُحذف بحذف التطبيق.
 - **الإشعارات:** تُجدول محلياً على الجهاز. لا تمرّ بأي خادم إشعارات سحابي.
 - **أذونات الجهاز:** الموقع (اختياري، في المقدمة فقط)، الإشعارات، المنبّه الدقيق، الاهتزاز، وإعادة الجدولة بعد إعادة التشغيل — وكلها تُستخدم فقط لوظيفة مواقيت الصلاة.
@@ -29,7 +29,7 @@ Last updated: 15 November 2026 — applies to "Al-Muazzen" (com.tayeb.almuazzen)
 - **No ads:** The app contains no advertising network or ads SDK.
 - **No tracking / analytics:** No Firebase, no Google Analytics, no trackers or device fingerprinting of any kind.
 - **No accounts:** No sign-in, email, or phone number is ever requested.
-- **Location:** If — and only if — you enable GPS yourself, your coordinates are processed **on your device only** to calculate prayer times and Qibla direction. Coordinates are never sent to any server, never stored after calculation, and never shared. The app works fully without location by picking a city from the built-in list of 25 cities.
+- **Location:** If — and only if — you enable GPS yourself, your coordinates are processed **on your device only** to calculate prayer times and Qibla direction. Your last location is stored **locally on your device only** so times can be calculated when the app opens, and is deleted when you turn GPS off or uninstall the app. Coordinates are never sent to any server and never shared. The app works fully without location by picking a city from the built-in list of 25 cities.
 - **Local settings:** Your city, calculation method, notification preferences, and dark-mode choice are stored locally on your device only (SharedPreferences) and are deleted when you uninstall the app.
 - **Notifications:** Scheduled locally on the device. No cloud push service is used.
 - **Permissions:** Location (optional, foreground only), notifications, exact alarms, vibration, and boot-completed rescheduling — used solely for the prayer-time function.

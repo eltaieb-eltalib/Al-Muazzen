@@ -37,7 +37,7 @@ class SettingsScreen extends StatelessWidget {
           const SnackBar(content: Text('لم يُمنح إذن الموقع — سيتم استخدام المدينة المختارة يدوياً')),
         );
       }
-      onChanged(settings.copyWith(useGps: false));
+      onChanged(settings.copyWith(useGps: false, clearGps: true));
       return;
     }
     try {
@@ -63,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
           const SnackBar(content: Text('تعذّر تحديد الموقع الآن — تأكد أن GPS يعمل ثم حاول مجدداً')),
         );
       }
-      onChanged(settings.copyWith(useGps: false));
+      onChanged(settings.copyWith(useGps: false, clearGps: true));
     }
   }
 
@@ -108,7 +108,7 @@ class SettingsScreen extends StatelessWidget {
               if (v) {
                 await _requestGps(context);
               } else {
-                onChanged(settings.copyWith(useGps: false));
+                onChanged(settings.copyWith(useGps: false, clearGps: true));
               }
             },
           ),
@@ -146,6 +146,7 @@ class SettingsScreen extends StatelessWidget {
                 onChanged(settings.copyWith(prayerNotifications: updated));
               },
             ),
+          _ExactAlarmNotice(masterEnabled: settings.masterEnabled),
           const Divider(height: 24),
           SwitchListTile(
             title: const Text('تشغيل صوت الأذان'),
@@ -158,17 +159,25 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (v) => onChanged(settings.copyWith(adhanSound: v)),
           ),
           const _AdhanPreviewTile(),
+          // إيقاف فعلي: يُطفئ المفتاح الرئيسي ويلغي كل التنبيهات.
+          // (زر «إلغاء فقط» لم يعد له معنى: أي تغيير إعدادات يعيد الجدولة.)
           TextButton.icon(
-            onPressed: () async {
-              await NotificationService.instance.cancelAll();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('تم إلغاء جميع الإشعارات المجدولة')),
-                );
-              }
-            },
+            onPressed: settings.masterEnabled
+                ? () async {
+                    await NotificationService.instance.stopAll();
+                    onChanged(settings.copyWith(
+                      masterEnabled: false,
+                      clearMutedUntil: true,
+                    ));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('تم إيقاف المؤذن وإلغاء كل التنبيهات')),
+                      );
+                    }
+                  }
+                : null,
             icon: const Icon(Icons.notifications_off),
-            label: const Text('إلغاء كل الإشعارات المجدولة'),
+            label: const Text('إيقاف المؤذن وإلغاء كل التنبيهات'),
           ),
           const Divider(height: 32),
           SwitchListTile(
@@ -213,6 +222,74 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// تنبيه داخل الإعدادات يظهر فقط عندما يكون المؤذن مفعّلاً وإذن
+/// المنبّه الدقيق غير ممنوح: بدون الإذن تُستخدم الجدولة غير الدقيقة،
+/// وقد تتأخر التنبيهات في وضع توفير الطاقة. زر «منح الإذن» يفتح
+/// صفحة إعداد النظام الخاصة بالإذن، ويختفي التنبيه عند منحه.
+class _ExactAlarmNotice extends StatefulWidget {
+  final bool masterEnabled;
+  const _ExactAlarmNotice({required this.masterEnabled});
+
+  @override
+  State<_ExactAlarmNotice> createState() => _ExactAlarmNoticeState();
+}
+
+class _ExactAlarmNoticeState extends State<_ExactAlarmNotice> {
+  bool _show = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ExactAlarmNotice oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // أعد الفحص عند تشغيل المؤذن من هذه الشاشة نفسها.
+    if (widget.masterEnabled && !oldWidget.masterEnabled) _check();
+  }
+
+  Future<void> _check() async {
+    if (!widget.masterEnabled) return;
+    final can = await NotificationService.instance.canScheduleExactAlarms();
+    if (mounted) setState(() => _show = !can);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_show || !widget.masterEnabled) return const SizedBox.shrink();
+    return Card(
+      color: const Color(0xFFFFF3E0),
+      margin: const EdgeInsets.only(top: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'التنبيهات قد تتأخر في وضع توفير الطاقة بدون إذن المنبّه الدقيق. '
+              'امنح الإذن لتصلك تنبيهات الصلاة في وقتها تماماً.',
+              style: TextStyle(height: 1.6),
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton(
+                onPressed: () async {
+                  await NotificationService.instance
+                      .requestExactAlarmPermission();
+                  await _check();
+                },
+                child: const Text('منح الإذن'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

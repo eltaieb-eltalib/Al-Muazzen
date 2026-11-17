@@ -26,7 +26,10 @@ class QiblaScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('من ${city.nameAr}، ${city.country}',
+              Text(
+                  city.country.isEmpty
+                      ? 'من ${city.nameAr}'
+                      : 'من ${city.nameAr}، ${city.country}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               // الرقم داخل اتجاه LTR حتى لا ينعكس ترتيبه داخل النص العربي.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:geolocator/geolocator.dart';
@@ -53,27 +55,7 @@ class _MuazzenAppState extends State<MuazzenApp> {
   }
 
   Future<void> _load() async {
-    var s = await _settingsService.load();
-    // تحديث صامت لموقع GPS عند الفتح — فقط إن كان الإذن ممنوحاً أصلاً
-    // (لا مطالبات عند الفتح أبداً). أي فشل يُبقي آخر موقع محفوظ.
-    if (s.useGps) {
-      try {
-        final perm = await Geolocator.checkPermission();
-        if (perm == LocationPermission.always ||
-            perm == LocationPermission.whileInUse) {
-          final pos = await Geolocator.getCurrentPosition(
-            locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.medium,
-              timeLimit: Duration(seconds: 5),
-            ),
-          );
-          s = s.copyWith(gpsLat: pos.latitude, gpsLng: pos.longitude);
-          await _settingsService.save(s);
-        }
-      } catch (_) {
-        // لا موقع الآن — نكمل بآخر موقع محفوظ أو بالمدينة اليدوية.
-      }
-    }
+    final s = await _settingsService.load();
     if (!mounted) return;
     setState(() {
       _settings = s;
@@ -84,6 +66,31 @@ class _MuazzenAppState extends State<MuazzenApp> {
     // الجهاز نفسه، الإشعارات المجدولة تُستعاد تلقائياً بواسطة
     // ScheduledNotificationBootReceiver حتى دون فتح التطبيق.
     await _schedule(s);
+    // تحديث موقع GPS بعد ظهور الواجهة — حتى لا تُبقي قراءته (قد تأخذ
+    // ثوانٍ) شاشةَ التحميل ظاهرة. لا مطالبات أبداً: فقط إن كان الإذن
+    // ممنوحاً أصلاً، وأي فشل يُبقي آخر موقع محفوظ.
+    if (s.useGps) unawaited(_refreshGps());
+  }
+
+  Future<void> _refreshGps() async {
+    try {
+      final perm = await Geolocator.checkPermission();
+      if (perm != LocationPermission.always &&
+          perm != LocationPermission.whileInUse) {
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+      final cur = _settings;
+      if (cur.gpsLat == pos.latitude && cur.gpsLng == pos.longitude) return;
+      await _update(cur.copyWith(gpsLat: pos.latitude, gpsLng: pos.longitude));
+    } catch (_) {
+      // لا موقع الآن — نكمل بآخر موقع محفوظ أو بالمدينة اليدوية.
+    }
   }
 
   /// إعادة جدولة صامتة من الإعدادات الحالية — تُستدعى عند الفتح وبعد

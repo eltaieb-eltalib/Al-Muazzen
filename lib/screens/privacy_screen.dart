@@ -12,7 +12,7 @@ class PrivacyScreen extends StatelessWidget {
 • لا إعلانات: لا يحتوي التطبيق على أي شبكة أو مكتبة إعلانية.
 • لا تتبّع ولا تحليلات: لا Firebase، لا Google Analytics، لا أدوات تتبّع من أي نوع.
 • لا حسابات: لا تسجيل دخول ولا بريد ولا رقم هاتف.
-• الموقع: إن فعّلت GPS بنفسك، تُستخدم إحداثياتك على جهازك فقط لحساب مواقيت الصلاة والقبلة. لا تُرسل إلى أي خادم ولا تُحفظ ولا تُشارك. ويمكن استخدام التطبيق كاملاً بدون موقع باختيار مدينة جاهزة.
+• الموقع: إن فعّلت GPS بنفسك، تُستخدم إحداثياتك على جهازك فقط لحساب مواقيت الصلاة والقبلة. يُحفظ آخر موقع محلياً على جهازك فقط، ويُحذف عند إيقاف GPS أو حذف التطبيق. لا يُرسل إلى أي خادم ولا يُشارك أبداً. ويمكن استخدام التطبيق كاملاً بدون موقع باختيار مدينة جاهزة.
 • الإعدادات: تُحفظ محلياً على جهازك فقط وتُحذف بحذف التطبيق.
 • الإشعارات: تُجدول محلياً على الجهاز، بلا أي خادم سحابي.
 • الأطفال: التطبيق غير مصمّم للأطفال دون 13 عاماً كجمهور أساسي، ولا يجمع بيانات من أي شخص.
@@ -26,7 +26,7 @@ In short: Al-Muazzen collects no data at all.
 • No ads and no ads SDKs.
 • No tracking or analytics: no Firebase, no Google Analytics, no trackers.
 • No accounts, email, or phone number.
-• Location: only if you enable GPS yourself, coordinates are processed on-device only for prayer times and Qibla. Never sent to any server, never stored, never shared. The app works fully without location using the built-in city list.
+• Location: only if you enable GPS yourself, coordinates are processed on-device only for prayer times and Qibla. Your last location is kept locally on your device only and is deleted when you turn GPS off or uninstall the app. Never sent to any server, never shared. The app works fully without location using the built-in city list.
 • Settings are stored locally on your device only and deleted on uninstall.
 • Notifications are scheduled locally; no cloud push service.
 • Not designed for children under 13 as a primary audience; no data is collected from anyone.

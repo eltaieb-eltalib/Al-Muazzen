@@ -55,7 +55,7 @@ never used for ads, tracking, or any background work.
 - [ ] عنوان قصير + وصف كامل بالعربية (وإنجليزية اختيارية) — بدون كلمات مضللة أو حشو كلمات مفتاحية.
 
 ## 7) الصوت والحقوق
-- [x] **صوت الأذان يجب أن يكون ملكية عامة (Public Domain)** أو بترخيص صريح مكتوب.
+- [x] **صوت الأذان بترخيص حر موثّق:** تسجيل «Azan.ogg» من Wikimedia Commons بصوت Andrewler، برخصة **CC BY-SA 4.0**، مع النسبة لصاحبه داخل التطبيق التزاماً بشروط الرخصة. (لا يُشترط أن يكون الصوت ملكية عامة.)
   - مصدر الصوت المستخدم فعلياً (حُسم بقرار المالك 2026-11-17): تسجيل «Azan.ogg» من Wikimedia Commons، بصوت **Andrewler**، رخصة **CC BY-SA 4.0** — https://commons.wikimedia.org/wiki/File:Azan.ogg — يُستخدم دون تعديل، والنسبة داخل التطبيق (الإعدادات) وفي `assets/audio/ATTRIBUTION.md`.
   - دُمج في النسخة 1.0.1+2: صوت قناة إشعارات `adhan_sound_channel` (res/raw/adhan.mp3) + معاينة داخل الإعدادات عبر audioplayers + مفتاح «تشغيل صوت الأذان».
   - تنبيه موثّق: مجموعة github.com/abodehq/Athan-MP3 **بلا ترخيص** (GitHub API: ‏`license: null`) — بُحثت وقرّر المالك عدم استخدامها.
