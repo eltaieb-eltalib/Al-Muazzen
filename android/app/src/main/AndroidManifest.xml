@@ -1,0 +1,82 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      أذونات المؤذن — الحد الأدنى الآمن فقط (Google Play compliant):
+      Minimal & safe permission set ONLY. No background location, no
+      foreground-service permission, no USE_FULL_SCREEN_INTENT, no
+      READ_MEDIA / storage, no tracking-related permissions.
+      No Firebase, no analytics, no ads SDKs anywhere in this app.
+    -->
+
+    <!-- الموقع التقريبي — لحساب المواقيت والقبلة للمدينة الحالية (اختياري) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- الموقع الدقيق — فقط عندما يفعّل المستخدم GPS بنفسه من الإعدادات.
+         Foreground only: لا يوجد أي إذن موقع في الخلفية
+         (ACCESS_BACKGROUND_LOCATION is intentionally NOT requested). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- إظهار تنبيه دخول وقت الصلاة (Android 13+ — يُطلب من المستخدم وقت التشغيل) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- منبّه دقيق لوقت الصلاة — هذه هي الوظيفة الأساسية للتطبيق.
+         نستخدم SCHEDULE_EXACT_ALARM (يمنحه المستخدم من إعدادات النظام)
+         ولا نستخدم USE_EXACT_ALARM المقيّدة بسياسات Play.
+         SCHEDULE_EXACT_ALARM (user-granted), NOT the restricted USE_EXACT_ALARM. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- إعادة جدولة تنبيهات الصلاة تلقائياً بعد إعادة تشغيل الجهاز،
+         حتى لا يحتاج المستخدم لفتح التطبيق من جديد -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- اهتزاز خفيف مع تنبيه الصلاة -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:label="المؤذن"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Auto-reschedule on boot: flutter_local_notifications restores
+             scheduled prayer notifications after reboot / app update,
+             so the user never needs to reopen the app to restart alarms. -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+            android:exported="false" />
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+</manifest>

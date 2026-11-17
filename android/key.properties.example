@@ -1,0 +1,10 @@
+# Copy this file to key.properties and fill in YOUR upload-key values locally.
+# NEVER commit key.properties or any .jks/.keystore file to git.
+# Generate an upload key (once):
+#   keytool -genkey -v -keystore ~/almuazzen-upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+# Then enroll in Play App Signing in Google Play Console (Google holds the
+# final app signing key; this is only the upload key).
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=/absolute/path/to/almuazzen-upload-keystore.jks

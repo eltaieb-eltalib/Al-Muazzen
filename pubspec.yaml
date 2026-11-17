@@ -1,0 +1,33 @@
+name: al_muazzen
+description: "المؤذن - Al-Muazzen: تطبيق مواقيت الصلاة والأذكار بالعربية، يعمل بدون إنترنت ويحترم الخصوصية."
+publish_to: 'none'
+version: 1.0.1+2
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  adhan: ^2.0.0+1
+  hijri: ^3.0.0
+  geolocator: ^13.0.0
+  shared_preferences: ^2.3.0
+  flutter_local_notifications: ^18.0.0
+  audioplayers: ^6.4.0
+  timezone: ^0.10.0
+  intl: ">=0.19.0 <0.21.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audio/adhan.mp3

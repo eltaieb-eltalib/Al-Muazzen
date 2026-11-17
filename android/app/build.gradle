@@ -1,0 +1,73 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+// --- Signing: reads android/key.properties if present (Play App Signing) ---
+// NEVER commit a real keystore or real passwords. See key.properties.example.
+// For release on Google Play, Google holds the app signing key (Play App Signing);
+// you sign the AAB with your UPLOAD key only.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+android {
+    namespace = "com.tayeb.almuazzen"
+    // Google Play (verified Nov 2026): new apps must target API 36 (Android 16)
+    // — required since 31 Aug 2026.
+    compileSdk = 36
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        // flutter_local_notifications requires core library desugaring (checkReleaseAarMetadata).
+        coreLibraryDesugaringEnabled = true
+    }
+    kotlinOptions { jvmTarget = '17' }
+
+    defaultConfig {
+        applicationId = "com.tayeb.almuazzen"
+        minSdk = 24          // Android 7.0 — broad reach, modern enough for exact alarms
+        targetSdk = 36       // Android 16 — Play requirement for new apps (Aug 2026)
+        versionCode = 1
+        versionName = "1.0.0"
+        multiDexEnabled = true
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties['keyAlias']
+                keyPassword = keystoreProperties['keyPassword']
+                storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+                storePassword = keystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Uses upload key when key.properties exists; otherwise falls back
+            // to debug signing so `flutter build appbundle` still works locally
+            // for testing — replace before uploading to Play.
+            signingConfig = keystorePropertiesFile.exists()
+                ? signingConfigs.release
+                : signingConfigs.debug
+            minifyEnabled = false
+            shrinkResources = false
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
+}
