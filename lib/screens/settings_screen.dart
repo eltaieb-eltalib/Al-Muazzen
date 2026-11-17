@@ -77,7 +77,7 @@ class SettingsScreen extends StatelessWidget {
           // ===== المفتاح الرئيسي: نفس مفتاح الشاشة الرئيسية =====
           MasterSwitchCard(
             settings: settings,
-            city: arabCities[settings.cityIndex.clamp(0, arabCities.length - 1)],
+            city: effectiveCityFor(settings),
             onChanged: onChanged,
           ),
           const SizedBox(height: 8),

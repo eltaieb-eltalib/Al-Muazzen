@@ -1,5 +1,22 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/cities.dart';
+
+/// المدينة الفعّالة للحسابات: موقع GPS المقروء فعلياً إن كان مفعّلاً
+/// ومتاحاً، وإلا المدينة المختارة يدوياً.
+City effectiveCityFor(AppSettings s) {
+  if (s.useGps && s.gpsLat != null && s.gpsLng != null) {
+    return City(
+      nameAr: 'موقعي الحالي',
+      nameEn: 'Current location',
+      country: '',
+      lat: s.gpsLat!,
+      lng: s.gpsLng!,
+    );
+  }
+  return arabCities[s.cityIndex.clamp(0, arabCities.length - 1)];
+}
+
 /// إعدادات التطبيق المحفوظة محلياً — بدون أي خادم أو تتبّع.
 class AppSettings {
   final int cityIndex;
